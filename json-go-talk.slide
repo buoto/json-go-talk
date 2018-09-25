@@ -1,6 +1,6 @@
 Niestandardowa (de)serializacja JSONów w Go
 GO! Academy
-2.01.2006
+15:00 4 Oct 2018
 Tags: Go, JSON, stdlib
 
 Michał Błotniak
@@ -13,10 +13,10 @@ http://codilime.com/
 * Zaczyna się łatwo
 : zwykłe wywołanie json.Unmarshal/Marshal
 : obserwacja z kluczami Upper/Lowercase
-Some Text
 
 * Unmarshal a potem marshal nie daje takich samych wyników
 : małe klucze zamieniaja sie w duze i duze zostaja
+: https://play.golang.org/p/QHHGM_JBNZn
 
 * Struct Tag
 
@@ -32,7 +32,10 @@ Some Text
 * REST PATCH
 : json unmarshal na istniejącym obiekcie
 
+* Interfejsy json.Unmarshaler i json.Marshaler
+
 * Pola nienadpisywalne
+: dodać kilka kroków jak dochodzi się do pomysłu - najpierw przepisany struct, potem zembedowany, potem z pointerem
 : struct post z polem created at i jak zabronic jego nadpisania
 : po pewnym czasie warto rozdzielić strukture requestu od własciwego structa, aby sie nie zaskoczyc
 
