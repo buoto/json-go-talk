@@ -1,0 +1,46 @@
+Niestandardowa (de)serializacja JSONów w Go
+GO! Academy
+2.01.2006
+Tags: Go, JSON, stdlib
+
+Michał Błotniak
+Software Engineer, Codilime
+michal.blotniak@codilime.com
+http://codilime.com/
+
+: Tutaj kilka slajdów wstępu, agenda
+
+* Zaczyna się łatwo
+: zwykłe wywołanie json.Unmarshal/Marshal
+: obserwacja z kluczami Upper/Lowercase
+Some Text
+
+* Unmarshal a potem marshal nie daje takich samych wyników
+: małe klucze zamieniaja sie w duze i duze zostaja
+
+* Struct Tag
+
+* JSON Tags
+: tagi jsonowe jednoznacznie ustalają nazwę klucza
+
+* Dodatkowe opcje
+: -, omitempty, string
+
+* Partial unmarshaling
+: można przechwycić dane w trakcie deserializacji
+
+* REST PATCH
+: json unmarshal na istniejącym obiekcie
+
+* Pola nienadpisywalne
+: struct post z polem created at i jak zabronic jego nadpisania
+: po pewnym czasie warto rozdzielić strukture requestu od własciwego structa, aby sie nie zaskoczyc
+
+* Podmiana typów pola
+
+* json.Number
+
+* Walidacja w serializerze (czy nauka poszła za daleko?)
+: errory walidacji logiki są trudne do odróżnienia od błędów serializacji
+
+
