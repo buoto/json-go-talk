@@ -8,42 +8,195 @@ Software Engineer, Codilime
 michal.blotniak@codilime.com
 http://codilime.com/
 
+* Plan
+
+1. Wprowadzenie
+2. Obsługa niestandardowych formatów danych
+3. Pola o nietypowym dostępie
+
 : Tutaj kilka slajdów wstępu, agenda
 
-* Zaczyna się łatwo
+* Wprowadzenie
+
+* Wymagania
+Frontend tworzy użytkowników wysyłając dane z formularza w postaci JSON i oczekuje odpowiedzi zawierającej dane utworzonego obiektu.
+
+    {"name": <string>} -> {"name": <string>}
+
+
+* Prototyp aplikacji
+.html frontend.html
+
+* Żądanie...
 : zwykłe wywołanie json.Unmarshal/Marshal
 : obserwacja z kluczami Upper/Lowercase
+.play simple_unmarshal.go /START OMIT/,/END OMIT/
 
-* Unmarshal a potem marshal nie daje takich samych wyników
+* ... i odpowiedź
+.play simple_marshal.go /START OMIT/,/END OMIT/
+
+* Coś się nie zgadza
+Wynik działania funkcji `Marshal` różni się od danych wejściowych dla `Unmarshal`.
+
+    {"name": "Rob Rike"} != {"Name": "Rob Rike"}
+
+
+* Z tagami
+.play simple_marshal_tag.go /START OMIT/,/END OMIT/
+
+: * Unmarshal a potem marshal nie daje takich samych wyników
 : małe klucze zamieniaja sie w duze i duze zostaja
 : https://play.golang.org/p/QHHGM_JBNZn
 
-* Struct Tag
-
 * JSON Tags
+- `"omitempty"` - pomija wartości "zerowe" w przypadku serializacji
+
+   Name string `json:"name,omitempty"`
+- `"string"` - sprawia, że pola liczbowe traktowane są jako pola typu string
+
+   Age int `json:"age,string"`
+- `"-"` - pomija pole
+
+   CreatedAt string `json:"-"`
+
+
 : tagi jsonowe jednoznacznie ustalają nazwę klucza
+: ????
 
-* Dodatkowe opcje
-: -, omitempty, string
+* Obsługa niestandardowych formatów danych
 
-* Partial unmarshaling
-: można przechwycić dane w trakcie deserializacji
+* Aplikacja się rozwija
+Zaczynamy otrzymywać coraz bardziej złożone obiekty:
 
-* REST PATCH
-: json unmarshal na istniejącym obiekcie
+    {
+        "name": "Baard Kolstad",
+        "age": 26,
+    }
 
-* Interfejsy json.Unmarshaler i json.Marshaler
+: Okazuje się też, że musimy być wstecznie kompatybilni ze starym API
+Dostajemy też takie:
 
-* Pola nienadpisywalne
+    {
+        "name": "Charlie Watts",
+        "age": "77",
+    }
+
+* Próba implementacji
+.play number_unmarshal.go /START OMIT/,/END OMIT/
+
+* Tag "string"
+.play number_unmarshal_string.go /START OMIT/,/END OMIT/
+
+* Interfejsy Marshaler i Unmarshaler
+
+    type Marshaler interface {
+        MarshalJSON() ([]byte, error)
+    }
+
+    type Unmarshaler interface {
+        UnmarshalJSON([]byte) error
+    }
+
+* Pierwsze rozwiązanie
+
+.play custom_unmarshal.go /START OMIT/,/END OMIT/
+
+* json.Number
+
+    type Number string
+
+    func (n Number) Float64() (float64, error)
+
+    func (n Number) Int64() (int64, error)
+
+    func (n Number) String() string
+
+* Zastosowanie json.Number
+.play custom_unmarshal_number.go /START OMIT/,/END OMIT/
+
+* Przykłady a rzeczywistość
+
+    type VirtualNetwork struct {
+    	UUID                            string                    `json:"uuid,omitempty"`
+    	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
+    	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
+    	EcmpHashingIncludeFields        *EcmpHashingIncludeFields `json:"ecmp_hashing_include_fields,omitempty"`
+    	ExternalIpam                    bool                      `json:"external_ipam,omitempty"`
+    	Perms2                          *PermType2                `json:"perms2,omitempty"`
+    	ParentType                      string                    `json:"parent_type,omitempty"`
+    	VirtualNetworkNetworkID         VirtualNetworkIdType      `json:"virtual_network_network_id,omitempty"`
+    	FloodUnknownUnicast             bool                      `json:"flood_unknown_unicast,omitempty"`
+    	PBBEtreeEnable                  bool                      `json:"pbb_etree_enable,omitempty"`
+    	PortSecurityEnabled             bool                      `json:"port_security_enabled,omitempty"`
+    	ImportRouteTargetList           *RouteTargetList          `json:"import_route_target_list,omitempty"`
+    	RouteTargetList                 *RouteTargetList          `json:"route_target_list,omitempty"`
+    	ExportRouteTargetList           *RouteTargetList          `json:"export_route_target_list,omitempty"`
+    	ProviderProperties              *ProviderDetails          `json:"provider_properties,omitempty"`
+    	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
+    	FQName                          []string                  `json:"fq_name,omitempty"`
+    	DisplayName                     string                    `json:"display_name,omitempty"`
+    	VirtualNetworkProperties        *VirtualNetworkType       `json:"virtual_network_properties,omitempty"`
+    	AddressAllocationMode           AddressAllocationModeType `json:"address_allocation_mode,omitempty"`
+    	IsShared                        bool                      `json:"is_shared,omitempty"`
+        // ...
+
+* Bardziej elastyczne podejście
+.play custom_unmarshal_number_better.go /START OMIT/,/END OMIT/
+
+* Działające bardziej elastyczne podejście
+.play custom_unmarshal_number_best.go /START OMIT/,/END OMIT/
+
+* Pola o nietypowym dostępie
+
+* Data utworzenia
+
+Chcemy zwracać datę utworzenia obiektu, ale nie chcemy jej nadpisywać:
+
+    {
+        "name": "Bob Rike",
+        "age": 62,
+        "created_at": "2006-01-02T15:04:05Z07:00",
+    }
+
+Do aktualizacji obiektu posłuży nam `json.Unmarshal` wywoływany na obiekcie wypełnionym starymi danymi.
+
+* Użycie "-"
+.play created.go /START OMIT/,/END OMIT/
+
+* Pole tylko do odczytu
+.play created_unmarshal.go /START OMIT/,/END OMIT/
+
+* Pole tylko do zapisu
+.play password.go /START OMIT/,/END OMIT/
+
+* Walidacja w trakcie deserialzacji?
+.play validate.go /START OMIT/,/END OMIT/
+Czy to na pewno dobry pomysł?
+
+: errory walidacji logiki są trudne do odróżnienia od błędów serializacji
+
+* Problemy z nadużywaniem UnmarshalJSON
+- Dodają warstwę "magii".
+- Błędy zwracane z metody są potem zwracane przez `json.Un/Marshal`.
+- Jest definiowany w tej samej paczce co definicja struktury.
+- Przesłanianie pól staje się problematyczne w przypadku wielokrotnie zagnieżdżonych obiektów.
+
+: która może pogarszać zrozumienie kodu.
+: - oczekujemy, że są to błędy serializacji.
+: - może to prowadzić do pomieszania logiki serializacji z kodem modelu.
+
 : dodać kilka kroków jak dochodzi się do pomysłu - najpierw przepisany struct, potem zembedowany, potem z pointerem
 : struct post z polem created at i jak zabronic jego nadpisania
 : po pewnym czasie warto rozdzielić strukture requestu od własciwego structa, aby sie nie zaskoczyc
 
-* Podmiana typów pola
+: Czasami nie chcemy aby logika serializacji znajdowała się w kodzie modelu/dziedzinowym
+: Spuchnięte unmarshalery to nic dobrego, łatwo o błąd, problem z wielopoziomowymi obiektami
 
-* json.Number
+* Brak kontroli istnienia pól
 
-* Walidacja w serializerze (czy nauka poszła za daleko?)
-: errory walidacji logiki są trudne do odróżnienia od błędów serializacji
+* Partial unmarshaling
+: można przechwycić dane w trakcie deserializacji
+
+
 
 
