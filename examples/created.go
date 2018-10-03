@@ -9,7 +9,7 @@ import (
 func main() {
 	log.SetFlags(0)
 	// START OMIT
-	type User struct m
+	type User struct {
 		Name      string `json:"name"`
 		Age       int    `json:"age"`
 		CreatedAt string `json:"-"` // HL

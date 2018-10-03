@@ -10,13 +10,13 @@ http://codilime.com/
 
 * Plan
 
-1. Wprowadzenie
-2. Obsługa niestandardowych formatów danych
+1. Podstawowe wykorzystanie tagów
+2. Obsługa niestandardowych typów danych
 3. Pola o nietypowym dostępie
 
 : Tutaj kilka slajdów wstępu, agenda
 
-* Wprowadzenie
+* Podstawowe wykorzystanie tagów
 
 * Wymagania
 Frontend tworzy użytkowników wysyłając dane z formularza w postaci JSON i oczekuje odpowiedzi zawierającej dane utworzonego obiektu.
@@ -192,11 +192,24 @@ Czy to na pewno dobry pomysł?
 : Czasami nie chcemy aby logika serializacji znajdowała się w kodzie modelu/dziedzinowym
 : Spuchnięte unmarshalery to nic dobrego, łatwo o błąd, problem z wielopoziomowymi obiektami
 
-* Brak kontroli istnienia pól
 
-* Partial unmarshaling
 : można przechwycić dane w trakcie deserializacji
 
 
+* Najważniejszy link
 
+.link https://golang.org/pkg/encoding/json/
 
+Nie omówione tematy:
+
+- Dekodery i Enkodery,
+
+- Kontrola występowania kluczy w wejściowych danych,
+
+- Wykorzystanie json.RawMessage.
+
+* Czas na Dojo!
+
+.link http://www.cyber-dojo.org/id_join/show
+
+ ID: ZJm6q7
